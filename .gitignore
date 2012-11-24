@@ -20,5 +20,5 @@
 *.swp
 *~
 
-# Sublime Text 2
+# Sublime Text 2 save files
 *.sublime-*
