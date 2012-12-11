@@ -10,17 +10,20 @@ describe "Authentication" do
   end
   
   describe 'signin' do
-    before {visit signin_path}
     
     describe 'with invalid information' do
-      before {click_button 'Sign in'}
+      before {invalid_sign_in}
       
       it {should have_selector('title', text: 'Sign in')}
-      it {should have_selector('div.alert.alert-error', text: 'Invalid')}
+      it {should have_error_message('Invalid')}
+
+      it {should_not have_link('Users')}
+      it {should_not have_link('Profile')}
+      it {should_not have_link('Settings')}
       
       describe 'after visiting another page' do
         before {click_link "Home"}
-        it {should_not have_selector('div.alert.alert-error', text: 'Invalid')}
+        it {should_not have_error_message('Invalid')}
       end
     end
     
@@ -39,6 +42,19 @@ describe "Authentication" do
         before {click_link 'Sign out'}
         it {should have_link('Sign in')}
       end
+
+      describe 'followed by new' do
+        before {visit new_user_path}
+        
+        it {should have_content('Welcome to the Sample App')}
+      end
+
+      describe 'followed by submitting a POST request to the User#create action' do
+        before {post users_path}
+        
+        specify {response.should redirect_to(root_path)}
+      end
+
     end    
   end
   
@@ -87,9 +103,7 @@ describe "Authentication" do
       describe 'when attempting to visit a protected page' do
         before do
           visit edit_user_path(user)
-          fill_in 'Email', with: user.email
-          fill_in 'Password', with: user.password
-          click_button 'Sign in'
+          valid_sign_in user
         end
         
         describe 'after signing in' do
@@ -112,5 +126,22 @@ describe "Authentication" do
       end
     end
 
+    describe 'as admin user' do
+      let(:user) {FactoryGirl.create(:admin)}
+      before {sign_in user}
+      
+      describe 'submit a DELETE request on myself to the Users#destroy action' do
+        before {delete user_path(user)}
+        specify {response.should redirect_to(root_path)}
+      end
+    end
+
+    describe 'accessible attributes' do
+      it 'should not allow access to admin' do
+        expect do
+          User.new(admin: true)
+        end.should raise_error(ActiveModel::MassAssignmentSecurity::Error)
+      end
+    end
   end
 end

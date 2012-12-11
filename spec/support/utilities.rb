@@ -8,3 +8,20 @@ def sign_in(user)
   # Sing in when not using Capybara as well
   cookies[:remember_token] = user.remember_token
 end
+
+def valid_sign_in(user)
+  fill_in 'Email', with: user.email
+  fill_in 'Password', with: user.password
+  click_button 'Sign in'  
+end
+
+def invalid_sign_in
+  visit signin_path
+  click_button 'Sign in'  
+end
+
+RSpec::Matchers.define :have_error_message do |message|
+  match do |page|
+    page.should have_selector('div.alert.alert-error', text: message)
+  end
+end
