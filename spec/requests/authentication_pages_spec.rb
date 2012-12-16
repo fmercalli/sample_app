@@ -46,7 +46,9 @@ describe "Authentication" do
       describe 'followed by new' do
         before {visit new_user_path}
         
-        it {should have_content('Welcome to the Sample App')}
+        # come mai il testo non dice che l'istruzione sotto non funziona più a seguito delle modifiche di Listing 10.31?
+        # it {should have_content('Welcome to the Sample App')} 
+        it {should have_content('view my profile')}
       end
 
       describe 'followed by submitting a POST request to the User#create action' do
@@ -110,6 +112,21 @@ describe "Authentication" do
           it 'should render the desired protected page' do
             page.should have_selector('title', text: 'Edit user')
           end
+        end
+      end
+      
+      describe 'in the Microposts controller' do
+        describe 'submitting to the create action' do
+          before {post microposts_path}
+          specify {response.should redirect_to(signin_path)}
+        end
+
+        describe 'submitting to the destroy action' do
+          before do
+            micropost = FactoryGirl.create(:micropost)
+            delete micropost_path(micropost)
+          end
+          specify {response.should redirect_to(signin_path)}
         end
       end
        
